@@ -12,16 +12,30 @@
       </div>
 
       <h2 class="text-[#0070BA] text-center text-2xl font-semibold">
-        Envoyer le lien de réinitialisation
+        Réinitialisation
       </h2>
 
       <!-- Formulaire de réinitialisation -->
-      <form @submit.prevent="sendPhoneNumber" class="space-y-4">
-        <!-- Champ de saisie du Numéro de téléphone -->
-        <div class="flex items-center space-x-2">
+      <form @submit.prevent="sendResetRequest" class="space-y-4">
+        <!-- Choix du mode de réinitialisation (par téléphone ou email) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700"
+            >Choisir méthode</label
+          >
+          <select
+            v-model="resetMethod"
+            class="w-full h-10 bg-gray-200 rounded-md border border-gray-300 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+          >
+            <option value="phone">Par téléphone</option>
+            <option value="email">Par email</option>
+          </select>
+        </div>
+
+        <!-- Champ de saisie du numéro de téléphone -->
+        <div v-if="resetMethod === 'phone'" class="flex items-center space-x-2">
           <select
             v-model="countryCode"
-            class="w-16 h-10 bg-gray-200 rounded-md border border-gray-300 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+            class="w-16 h-10 bg-gray-200 rounded-md border border-gray-300"
           >
             <option v-for="code in countryCodes" :key="code" :value="code">
               {{ code }}
@@ -33,14 +47,27 @@
             @input="formatPhoneNumber"
             required
             class="appearance-none rounded-md flex-1 py-3 px-4 border border-gray-300 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-            placeholder="WhatsApp"
+            placeholder="Numéro de téléphone"
           />
         </div>
 
-        <!-- Affichage des erreurs de numéro -->
-        <p v-if="phoneError" class="text-red-500 text-sm">{{ phoneError }}</p>
+        <!-- Champ de saisie de l'email -->
+        <div v-if="resetMethod === 'email'" class="flex items-center space-x-2">
+          <input
+            v-model="email"
+            type="email"
+            required
+            class="appearance-none rounded-md flex-1 py-3 px-4 border border-gray-300 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+            placeholder="Votre email"
+          />
+        </div>
 
-        <!-- Bouton pour envoyer le numéro -->
+        <!-- Erreurs -->
+        <p v-if="errorMessage" class="text-red-500 text-sm">
+          {{ errorMessage }}
+        </p>
+
+        <!-- Bouton pour envoyer le lien -->
         <button
           type="submit"
           :disabled="loading"
@@ -50,16 +77,14 @@
         </button>
       </form>
 
-      <!-- Lien retour à l'accueil -->
       <div class="text-sm text-center mt-4">
         <NuxtLink
-          to="/"
+          to="/login"
           class="text-green-600 hover:text-green-400 font-semibold"
         >
+          Se connecter ?
         </NuxtLink>
       </div>
-
-      <!-- Notifications Toast -->
     </div>
   </div>
 </template>
@@ -73,83 +98,42 @@ import "vue3-toastify/dist/index.css";
 const countryCodes = ref(["+225", "+33", "+1", "+44"]);
 const countryCode = ref("+225");
 const phoneNumber = ref("");
-const phoneError = ref("");
+const email = ref("");
+const resetMethod = ref("phone");
+const errorMessage = ref("");
 const loading = ref(false);
 const router = useRouter();
-// const toast = useToast();
 
 const formatPhoneNumber = () => {
   if (phoneNumber.value.length < 9 || phoneNumber.value.length > 15) {
-    phoneError.value = "Numéro de téléphone invalide";
+    errorMessage.value = "Numéro de téléphone invalide";
   } else {
-    phoneError.value = "";
+    errorMessage.value = "";
   }
 };
 
-const sendPhoneNumber = async () => {
+const sendResetRequest = async () => {
   loading.value = true;
-  phoneError.value = ""; // Reset phone error before sending request
+  errorMessage.value = "";
 
   try {
-    const response = await $fetch("/api/auth/send-phonenumber", {
+    const body =
+      resetMethod.value === "phone"
+        ? { phoneNumber: phoneNumber.value }
+        : { email: email.value };
+
+    const response = await $fetch("/api/auth/send-reset-link", {
       method: "POST",
-      body: { phoneNumber: phoneNumber.value },
+      body,
     });
 
-    toast.success("Lien de réinitialisation envoyé avec succès !");
+    toast.success("Lien de réinitialisation envoyé !");
     router.push("/resetpassword"); // Redirige vers la page de réinitialisation
   } catch (error) {
     toast.error("Erreur lors de l'envoi du lien de réinitialisation.");
     console.error(error);
-    router.push("/resetpassword"); // Redirige vers la page de réinitialisation
   } finally {
     loading.value = false;
   }
 };
 </script>
-
-<style scoped>
-.bg-gray-100 {
-  background-color: #f5f7fa; /* Couleur d'arrière-plan douce */
-}
-
-.bg-cyan-600 {
-  background-color: #06b6d4; /* Couleur cyan */
-}
-
-.text-cyan-700 {
-  color: #06b6d4;
-}
-
-.text-red-500 {
-  color: #f87171;
-}
-
-.text-green-600 {
-  color: #16a34a;
-}
-
-.text-green-400 {
-  color: #34d399;
-}
-
-.input {
-  appearance: none;
-  border-radius: 0.375rem;
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  color: #111827;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.input::placeholder {
-  color: #6b7280;
-}
-
-.input:focus {
-  border-color: #06b6d4;
-  outline-color: #06b6d4;
-}
-</style>

@@ -56,7 +56,7 @@
       <!-- Lien vers l'accueil -->
       <div class="text-sm text-center">
         <NuxtLink to="/" class="text-green-600 hover:text-green-400">
-          Abonnez-vous pour la liste de tous vos transaction
+          Suivre toutes vos transactions ?
         </NuxtLink>
       </div>
     </div>

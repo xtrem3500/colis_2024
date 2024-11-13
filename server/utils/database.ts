@@ -11,8 +11,7 @@ export async function connectToDatabase() {
   }
 
   try {
-    const uri =
-      process.env.MONGODB_URI || "mongodb://localhost:27017/your-database-name"; // Remplace `your-database-name` par le nom de ta base de données
+    const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/test"; // Remplace `your-database-name` par le nom de ta base de données
     await mongoose.connect(uri);
     isConnected = true;
     console.log("MongoDB connecté avec succès");

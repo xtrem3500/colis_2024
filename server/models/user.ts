@@ -1,6 +1,5 @@
 // server/models/user.js
-import mongoose, { Schema } from "../api/mongoose"; // Importation de mongoose et de Schema
-import type { Document } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 interface IUser extends Document {
   firstName: string;

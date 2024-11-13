@@ -6,6 +6,7 @@ interface IAdmin extends Document {
   countryCode: string;
   phoneNumber: string;
   fullPhoneNumber: string;
+  email: string;
   role: string;
   password: string;
 }
@@ -13,6 +14,7 @@ interface IAdmin extends Document {
 const adminSchema = new Schema<IAdmin>({
   lastname: { type: String, required: true },
   firstName: { type: String, required: true },
+  email: { type: String, required: false, unique: true }, // Champ pour l'email
   countryCode: { type: String, required: true },
   phoneNumber: { type: String, required: true },
   fullPhoneNumber: { type: String, required: true, unique: true }, // Champ concaténé

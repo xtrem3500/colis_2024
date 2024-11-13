@@ -2,6 +2,7 @@ const createAdminUser = async () => {
   const adminData = {
     lastname: "ADMIN",
     firstName: "ADMIN",
+    email: "2024dibo@gmail.com",
     countryCode: "+225",
     phoneNumber: "0758966156",
     fullPhoneNumber: "+2250758966156", // Concaténation

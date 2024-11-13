@@ -1,9 +1,9 @@
 // server/api/auth/request-password-reset.post.ts
-import { H3Event, readBody } from "h3";
+import { readBody } from "h3";
 import { User } from "../../models/user"; // Modèle User, assurez-vous qu'il inclut fullPhoneNumber
 // import { generateResetToken, sendResetSMS } from "../../../utils/auth"; // Importez des utilitaires si nécessaires
 
-export default async (event: H3Event) => {
+export default async function (event: any) {
   try {
     // Lecture du corps de la requête
     const { countryCode, phoneNumber } = await readBody(event);
@@ -46,7 +46,7 @@ export default async (event: H3Event) => {
     console.error("Erreur lors de l'envoi du lien de réinitialisation:", error);
     return { status: 500, body: { error: "Erreur interne du serveur" } };
   }
-};
+}
 function sendResetSMS(fullPhoneNumber: string, message: string) {
   throw new Error("Function not implemented.");
 }

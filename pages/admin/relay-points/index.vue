@@ -65,7 +65,8 @@
 </template>
 
 <script setup lang="ts">
-import type { RelayPoint } from '~/types'
+import { toast } from 'vue3-toastify/index';
+import type { RelayPoint } from '~/types';
 
 definePageMeta({
   layout: 'admin',

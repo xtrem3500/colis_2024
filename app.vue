@@ -3,7 +3,6 @@
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
-    <!-- <Vue3-Toastify position="bottom-right" /> -->
   </div>
 </template>
 

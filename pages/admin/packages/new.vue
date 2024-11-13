@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+import { toast } from "vue3-toastify/index";
 import type { packageInfo } from "~/types";
 
 const router = useRouter();

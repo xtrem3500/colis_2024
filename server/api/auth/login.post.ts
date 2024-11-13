@@ -1,69 +1,50 @@
-import { defineEventHandler, readBody } from "h3"; // Fonctions pour gérer les requêtes dans Nuxt
-import bcrypt from "bcryptjs"; // Pour vérifier les mots de passe chiffrés
-import { AdminModel } from "~/server/models/admin"; // Modèle Mongoose pour interagir avec la collection `admin`
-import mongoose from "mongoose"; // Bibliothèque MongoDB
-import { PhoneNumber } from "libphonenumber-js";
+import { defineEventHandler, readBody } from "h3";
+import bcrypt from "bcryptjs";
+import { AdminModel } from "~/server/models/admin";
+import mongoose from "mongoose";
 
-// 1. Connexion à MongoDB (uniquement si non connecté)
+// Vérification de la connexion à MongoDB
 if (mongoose.connection.readyState === 0) {
-  // Si l'application n'est pas encore connectée à la base de données, on établit une connexion
   mongoose.connect(process.env.MONGO_URI || "", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   } as mongoose.ConnectOptions);
-  console.log("Connexion à MongoDB établie."); // Vérification de la connexion
+  console.log("Connected to MongoDB.");
 }
 
-// 2. Handler principal pour la requête de connexion
 export default defineEventHandler(async (event) => {
-  // Lecture du corps de la requête (les données envoyées par le formulaire)
   const body = await readBody(event);
   const { phoneNumber, password } = body;
 
-  console.log("Données reçues:", body); // Affiche les données reçues pour vérifier
-
-  // On suppose que `phoneNumber` contient le numéro complet (countryCode + phoneNumber)
-  const fullPhoneNumber = phoneNumber;
+  console.log("Login attempt with:", { phoneNumber });
 
   try {
-    // 3. Recherche d'un admin correspondant dans la base de données
-    console.log("Recherche admin avec le numéro:", fullPhoneNumber);
-    const admin = await AdminModel.findOne({ PhoneNumber });
-
+    // Recherche de l'admin par numéro de téléphone complet
+    const admin = await AdminModel.findOne({ fullPhoneNumber: phoneNumber });
     if (!admin) {
-      // Si aucun admin n'est trouvé, on retourne une erreur
-      console.log("Admin non trouvé pour ce numéro.", phoneNumber);
+      console.log("Admin not found for this phone number.");
       return {
         success: false,
-        error: "Numéro de téléphone ou mot de passe incorrect.",
+        error: "Invalid phone number or password.",
+        statusCode: 401,
       };
     }
 
-    // 4. Vérification du mot de passe
-    console.log("Vérification du mot de passe pour:", admin.fullPhoneNumber);
+    // Vérification du mot de passe
     const isPasswordCorrect = await bcrypt.compare(password, admin.password);
-
     if (!isPasswordCorrect) {
-      // Si le mot de passe ne correspond pas, on retourne une erreur
-      console.log("Mot de passe incorrect.");
+      console.log("Incorrect password for:", phoneNumber);
       return {
         success: false,
-        error: "Numéro de téléphone ou mot de passe incorrect.",
+        error: "Invalid phone number or password.",
+        statusCode: 401,
       };
     }
 
-    // 5. Connexion réussie
-    console.log("Connexion réussie pour:", admin.fullPhoneNumber);
-    return {
-      success: true,
-      message: "Connexion réussie",
-    };
+    console.log("Login successful for:", phoneNumber);
+    return { success: true, message: "Login successful", statusCode: 200 };
   } catch (err) {
-    // Si une erreur se produit, on la logge pour le débogage
-    console.error("Erreur lors de la connexion :", err);
-    return {
-      success: false,
-      error: "Erreur serveur",
-    };
+    console.error("Error during login:", err);
+    return { success: false, error: "Server error", statusCode: 500 };
   }
 });
